@@ -1,0 +1,5 @@
+### Zastosowane czujniki
+
+| Czujnik temperatury i wilgotności | Czujnik ciśnienia |
+| --- | --- |
+| Wpisz model, zakresy i dokładność swojego czujnika. | Wpisz model, zakresy i dokładność swojego czujnika. |

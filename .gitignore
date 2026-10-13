@@ -1,0 +1,17 @@
+config.json
+static.txt
+.venv/
+.cache/
+__pycache__/
+*.pyc
+data/
+logs/
+wykresy/
+tmp/
+*.sqlite3*
+*.log
+*.bak
+*.tar.gz
+crontab*.txt
+secrets.json
+*token*.json

@@ -1,0 +1,51 @@
+{
+  "timezone": "UTC",
+  "stale_after_minutes": 90,
+  "modbus": {
+    "host": "",
+    "port": 502,
+    "unit_id": 1,
+    "function_code": 3,
+    "timeout_seconds": 5,
+    "attempts": 3,
+    "retry_delay_seconds": 2
+  },
+  "sensors": {
+    "temperature": {
+      "address": null,
+      "signed": true,
+      "multiplier": 0.1,
+      "offset": 0,
+      "min": -100,
+      "max": 100
+    },
+    "humidity": {
+      "address": null,
+      "signed": false,
+      "multiplier": 0.1,
+      "offset": 0,
+      "min": 0,
+      "max": 100
+    },
+    "pressure": {
+      "address": null,
+      "signed": false,
+      "multiplier": 0.1,
+      "offset": 0,
+      "min": 100,
+      "max": 1200
+    }
+  },
+  "lemmy": {
+    "enabled": false,
+    "instance": "",
+    "username": "",
+    "password": "",
+    "community_id": null,
+    "post_id": null,
+    "title": "Stacja meteo",
+    "heading": "Stacja meteo",
+    "pin_in_community": false,
+    "update_note": "Aktualizacja co godzinę. Wykresy obejmują bieżący miesiąc."
+  }
+}

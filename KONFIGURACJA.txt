@@ -1,0 +1,85 @@
+OPIS CONFIG.JSON
+
+Utwórz config.json przez install.sh lub skopiuj config.example.json.
+Plik jest JSON: klucze i tekst w podwójnych cudzysłowach, kropka dziesiętna,
+true/false małymi literami, null dla nieustawionego ID. Bez komentarzy
+wewnątrz JSON i bez przecinka po ostatnim polu.
+
+timezone
+  Strefa IANA, domyślnie UTC. Wpisz strefę swojej stacji. Steruje opisami dat
+  i wyborem miesiąca, nie zmienia strefy systemowego CRON-a.
+stale_after_minutes
+  Domyślnie 90. Maksymalny wiek odczytu, by przy publikacji uznać go za świeży.
+  Także granica odstępu między punktami, po której wykres przerywa linię.
+  Dobierz do harmonogramu: dla pomiaru co godzinę 90 daje zapas 30 minut.
+
+modbus.host
+  Adres IP lub nazwa urządzenia dostępnego z serwera. W szablonie pusty:
+  musisz go uzupełnić. Sam host, bez przedrostka protokołu i bez portu.
+modbus.port
+  Port TCP urządzenia, domyślnie standardowe 502; dopuszczalne 1..65535.
+modbus.unit_id
+  ID urządzenia za bramką, 0..255. Wpisz wartość z dokumentacji urządzenia.
+modbus.function_code
+  3 = Holding Registers (FC03), 4 = Input Registers (FC04).
+  Jeden typ odczytu obowiązuje wszystkie trzy czujniki.
+modbus.timeout_seconds
+  Limit oczekiwania na połączenie/operację odczytu; domyślnie 5.
+modbus.attempts
+  Maksymalna liczba prób całego zestawu pomiarów, 1..10, domyślnie 3.
+modbus.retry_delay_seconds
+  Przerwa między nieudanymi próbami, domyślnie 2 sekundy.
+
+sensors.temperature / sensors.humidity / sensors.pressure
+  Każda z trzech sekcji ma WŁASNE pola:
+  address: adres rejestru przesyłany w protokole, 0..65535. null trzeba
+           zastąpić liczbą. Program nie odejmuje automatycznie 1 ani 40001.
+           Oznaczenia producenta typu 40001/LW nie są uniwersalne; sprawdź,
+           czy instrukcja urządzenia stosuje adresy zerowe czy numerację od 1.
+  signed: true dla int16 ze znakiem; false dla uint16. Dla temperatury
+          ujemnej najczęściej potrzebne true. Zależy od urządzenia.
+  multiplier: osobny mnożnik. Przykład: 0.1 daje dzielenie przez 10.
+  offset: korekta dodawana po przemnożeniu, zwykle 0.
+  min / max: dopuszczalny zakres już PRZELICZONEGO wyniku. Poza zakresem
+             oznacza błąd całej próby, a nie automatyczne ograniczenie wartości.
+
+Wzór: wynik = wartość_po_dekodowaniu_znaku * multiplier + offset.
+Przykłady:
+  234 * 0.1 + 0 = 23.4 -> we wpisie „23,4 °C”.
+  65481 przy signed=true -> -55 -> * 0.1 = -5.5 °C.
+  456 * 0.1 = 45.6 %.
+  10132 * 0.1 = 1013.2 hPa.
+Temperatura jest prezentowana w °C, wilgotność w %, ciśnienie w hPa.
+Jeśli urządzenie daje inne jednostki, dobierz multiplier i offset, aby
+wynik był właśnie w tych jednostkach. Nie zmieniaj tylko etykiety.
+Nie ma obsługi dodatkowych czujników ani dowolnej listy parametrów.
+
+lemmy.enabled
+  false: bez publikowania; true: włącz API po uzupełnieniu wymaganych pól.
+lemmy.instance
+  Pełny bazowy adres HTTPS własnej instancji, bez /post/... lub /api/v3,
+  bez loginu/hasła w URL. Użyj adresu docelowego bez przekierowań HTTP.
+lemmy.username / lemmy.password
+  Login (lub e-mail) i hasło konta autora Lemmy. To nie są dane do systemu,
+  Modbus, bazy PostgreSQL ani SMTP. Hasło jest lokalnie w config.json;
+  dostęp ogranicza chmod 600. To plik tajny, nie zaszyfrowany sejf.
+lemmy.community_id
+  Dodatni liczbowy ID społeczności na tej instancji, nie jej nazwa.
+lemmy.post_id
+  null: wyszukaj/utwórz wpis. Dodatnie ID: aktualizuj wskazany własny wpis.
+  Stan z data/lemmy-state.json ma utrzymać ciągłość; sprzeczne ID powoduje błąd.
+lemmy.title
+  Tytuł nowego wpisu i kryterium rozpoznawania po niepewnym utworzeniu.
+lemmy.heading
+  Nagłówek wyświetlany nad temperaturą w treści wpisu.
+lemmy.pin_in_community
+  true: próbuj przypiąć wpis w społeczności. Konto musi mieć uprawnienia.
+  false nie odpina wpisu już przypiętego; wyłącza wymuszanie przypięcia.
+lemmy.update_note
+  Tekst pod wartościami, np. opis częstotliwości. Sam nie zmienia CRON-a.
+
+PAMIĘTAJ
+Po edycji: .venv/bin/python settings.py. Nie wyświetla haseł.
+Zmiany wczytywane są podczas kolejnego uruchomienia; usługa stale działająca
+nie jest potrzebna, a serwera nie trzeba restartować.
+W razie niepewności sprawdź jeden odczyt z lemmy.enabled=false.
