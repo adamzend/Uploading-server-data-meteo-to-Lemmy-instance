@@ -216,3 +216,8 @@ The screenshot below was captured from the actual public post on 13 October 2026
 ![The live Szymbark weather post showing temperature, humidity, pressure, station status and monthly charts](docs/images/live-weather-post.jpg)
 
 **Lemmy instance homepage:** [szymbark.net](http://szymbark.net)
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0-only).
+See [LICENSE](LICENSE) for the full license text.

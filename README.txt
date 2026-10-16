@@ -190,8 +190,7 @@ Publikuj zawartość tylko tego katalogu. Nie dołączaj konfiguracji rzeczywist
 SQLite, tokenów, logów, wykresów, archiwów ani plików prywatnych z katalogu
 nadrzędnego. .gitignore ogranicza przypadkowe dodanie, ale nie usuwa sekretów
 z istniejącej historii Git. Przed git add/commit sprawdź git status i diff.
-Nie dodano licencji bez decyzji właściciela kodu. Przed udostępnieniem jako
-projekt open source wybierz licencję i dodaj jej treść, jeśli tego chcesz.
+Projekt jest udostępniany na licencji GNU GPLv3 (GPL-3.0-only). Pełny tekst licencji znajduje się w pliku LICENSE.
 
 Wersja nie instaluje SMTP ani hooków YunoHost — to konfiguracja instancji,
 a klient korzysta wyłącznie z Modbus, SQLite i uwierzytelnionego API Lemmy.
