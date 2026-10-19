@@ -32,6 +32,31 @@ def validate(config):
                 raise ValueError(name + '.' + key + ': expected finite number')
         if s['multiplier'] == 0 or s['min'] > s['max']:
             raise ValueError(name + ': invalid multiplier or range')
+    recovery = config.get('recovery', {'attempts': 5, 'delay_seconds': 60})
+    if type(recovery['attempts']) is not int or not 0 <= recovery['attempts'] <= 10:
+        raise ValueError('recovery.attempts: expected 0..10')
+    if type(recovery['delay_seconds']) not in (int, float) or not 1 <= recovery['delay_seconds'] <= 600:
+        raise ValueError('recovery.delay_seconds: expected 1..600')
+    h = config.get('heartbeat', {'enabled': False})
+    if type(h['enabled']) is not bool:
+        raise ValueError('heartbeat.enabled: expected boolean')
+    if h['enabled']:
+        if type(h['address']) is not int or not 0 <= h['address'] <= 65535:
+            raise ValueError('heartbeat.address: expected zero-based register address')
+        for key, lo, hi in [('timeout_seconds', 1, 600), ('poll_interval_seconds', .1, 60)]:
+            if type(h[key]) not in (int, float) or not lo <= h[key] <= hi:
+                raise ValueError('heartbeat.' + key + ': invalid value')
+        if h['poll_interval_seconds'] >= h['timeout_seconds']:
+            raise ValueError('heartbeat: polling interval must be shorter than timeout')
+        checks = h.get('checks', [])
+        if not isinstance(checks, list) or len(checks) > 16:
+            raise ValueError('heartbeat.checks: expected up to 16 checks')
+        for check in checks:
+            if type(check['address']) is not int or not 0 <= check['address'] <= 65535:
+                raise ValueError('heartbeat.checks.address: invalid address')
+            allowed = check['allowed_values']
+            if not isinstance(allowed, list) or not allowed or any(type(v) is not int or not 0 <= v <= 65535 for v in allowed):
+                raise ValueError('heartbeat.checks.allowed_values: expected unsigned register values')
     l = config['lemmy']
     if type(l['enabled']) is not bool:
         raise ValueError('lemmy.enabled: expected boolean')

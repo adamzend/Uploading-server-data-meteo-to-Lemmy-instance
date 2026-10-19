@@ -46,6 +46,17 @@
     "title": "Stacja meteo",
     "heading": "Stacja meteo",
     "pin_in_community": false,
-    "update_note": "Aktualizacja co godzinę. Wykresy obejmują bieżący miesiąc."
+    "update_note": "Aktualizacja co godzinÄ™. Wykresy obejmujÄ… bieĹĽÄ…cy miesiÄ…c."
+  },
+  "recovery": {
+    "attempts": 5,
+    "delay_seconds": 60
+  },
+  "heartbeat": {
+    "enabled": false,
+    "address": null,
+    "timeout_seconds": 70,
+    "poll_interval_seconds": 5,
+    "checks": []
   }
 }

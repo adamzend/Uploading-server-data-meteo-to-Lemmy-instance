@@ -120,6 +120,8 @@ def render_section(status, images, now=None, config=None):
     checked = datetime.fromisoformat(status['checked_at'])
     age = (now - checked).total_seconds()
     healthy = status['status'] == 'ok' and 0 <= age <= config['stale_after_minutes'] * 60
+    if config.get('heartbeat', {}).get('enabled', False):
+        healthy = healthy and status.get('freshness_verified') is True
     values = status.get('values') if healthy else status.get('last_success_values')
     def value(name, unit):
         return ('—' if not values else f"{values[name]:.1f}".replace('.', ',') + ' ' + unit)
@@ -134,6 +136,10 @@ def render_section(status, images, now=None, config=None):
     lines.append('**Ostatni poprawny pomiar:** ' + shown)
     if not healthy and values:
         lines.append('\nPodane wartości pochodzą z ostatniego poprawnego pomiaru.')
+    if not healthy:
+        lines.append('\nBrak aktualnego, poprawnego odczytu lub potwierdzenia świeżości danych stacji.')
+    elif not config.get('heartbeat', {}).get('enabled', False):
+        lines.append('\nKontrola heartbeatu źródła jest wyłączona; status dotyczy odczytu Modbus.')
     lines.append('\n' + config['lemmy']['update_note'])
     for slug, title in CHARTS:
         lines.extend(['', f'### {title}', '', f"![{title} — bieżący miesiąc]({images[slug]['url']})"])

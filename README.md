@@ -221,3 +221,7 @@ The screenshot below was captured from the actual public post on 13 October 2026
 
 This project is licensed under the GNU General Public License v3.0 (GPL-3.0-only).
 See [LICENSE](LICENSE) for the full license text.
+
+## v1.1.0: recovery and heartbeat verification
+
+See [release notes and upgrade instructions](RELEASE_v1.1.0.md) for the reasons for these changes, configuration examples and monitoring limitations. Heartbeat checking is optional and disabled by default; enable it to detect frozen source data behind a responding HMI.

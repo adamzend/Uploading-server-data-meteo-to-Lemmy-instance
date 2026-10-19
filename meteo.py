@@ -76,13 +76,64 @@ def decode(registers, start, sensors):
     return values, raw
 
 
+class FreshnessError(ValueError):
+    """The station is reachable but its source data is not confirmed fresh."""
+
+
+def verify_freshness(config):
+    h = config.get('heartbeat', {})
+    if not h.get('enabled', False):
+        return False
+    deadline = time.monotonic() + h['timeout_seconds']
+    settings = dict(config['modbus'])
+
+    def read(address):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise FreshnessError('Heartbeat: brak zmiany licznika w wymaganym czasie')
+        settings['timeout_seconds'] = min(config['modbus']['timeout_seconds'], remaining)
+        return read_registers(settings, address, 1)[0]
+
+    def snapshot():
+        for check in h.get('checks', []):
+            value = read(check['address'])
+            if value not in check['allowed_values']:
+                raise FreshnessError('Heartbeat: nieprawidłowy stan diagnostyczny źródła')
+        return read(h['address'])
+
+    previous = snapshot()
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise FreshnessError('Heartbeat: brak zmiany licznika w wymaganym czasie')
+        time.sleep(min(h['poll_interval_seconds'], remaining))
+        current = snapshot()
+        if time.monotonic() <= deadline and current != previous:
+            return True
+
+
 def collect(config):
+    result = collect_fast(config)
+    total = result[3]
+    recovery = config.get('recovery', {'attempts': 5, 'delay_seconds': 60})
+    for _ in range(recovery['attempts']):
+        if result[1] is not None:
+            break
+        time.sleep(recovery['delay_seconds'])
+        retry_config = dict(config, modbus=dict(config['modbus'], attempts=1))
+        result = collect_fast(retry_config)
+        total += result[3]
+    return result[:3] + (total, result[4])
+
+
+def collect_fast(config):
     settings = config["modbus"]
     attempts = settings["attempts"]
     if not 1 <= attempts <= 10:
         raise ValueError("Liczba prób musi wynosić od 1 do 10")
     for attempt in range(1, attempts + 1):
         try:
+            verify_freshness(config)
             # Read only configured registers, including widely separated addresses.
             registers = {}
             for name in FIELDS:
@@ -91,6 +142,8 @@ def collect(config):
                     registers[address] = read_registers(settings, address, 1)[0]
             values, raw = decode(registers, 0, config['sensors'])
             return utc_now(), values, raw, attempt, None
+        except FreshnessError as exc:
+            return utc_now(), None, None, attempt, str(exc)
         except (OSError, ValueError) as exc:
             logging.warning("Próba %s/%s: %s", attempt, attempts, exc)
             if attempt < attempts:
@@ -122,8 +175,11 @@ def save_result(db_path, checked_at, values, raw, attempts, error):
     return last_good
 
 
-def write_status(path, checked_at, values, last_good, local_timezone):
+def write_status(path, checked_at, values, last_good, local_timezone, error=None, heartbeat_enabled=False):
     status = {
+        "error": error,
+        "heartbeat_enabled": heartbeat_enabled,
+        "freshness_verified": heartbeat_enabled and values is not None,
         "status": "ok" if values is not None else "error",
         "label": "Działa poprawnie" if values is not None else "Błąd stacji",
         "checked_at": checked_at,
@@ -163,7 +219,8 @@ def main():
             last_good = save_result(BASE / "data/meteo.sqlite3", checked_at,
                                     values, raw, attempts, error)
             status = write_status(BASE / "data/status.json", checked_at,
-                                  values, last_good, config["timezone"])
+                                  values, last_good, config["timezone"], error,
+                                  config.get("heartbeat", {}).get("enabled", False))
             if values is not None:
                 logging.info("Pomiar: temperatura=%s °C; wilgotność=%s %%; ciśnienie=%s hPa",
                              values["temperature"], values["humidity"], values["pressure"])

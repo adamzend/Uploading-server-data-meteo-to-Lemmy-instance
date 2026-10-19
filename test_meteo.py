@@ -65,7 +65,7 @@ class CollectorTests(unittest.TestCase):
     def test_failure_retries_and_preserves_last_good(self):
         with patch("meteo.read_registers", side_effect=TimeoutError("test timeout")) as reader:
             with patch("meteo.time.sleep"):
-                checked_at, values, raw, attempts, error = meteo.collect(CONFIG)
+                checked_at, values, raw, attempts, error = meteo.collect_fast(CONFIG)
         self.assertEqual(reader.call_count, 3)
         self.assertIsNone(values)
         with tempfile.TemporaryDirectory(dir=meteo.BASE) as temporary:

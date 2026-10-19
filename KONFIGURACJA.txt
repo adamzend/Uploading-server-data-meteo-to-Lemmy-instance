@@ -83,3 +83,20 @@ Po edycji: .venv/bin/python settings.py. Nie wyświetla haseł.
 Zmiany wczytywane są podczas kolejnego uruchomienia; usługa stale działająca
 nie jest potrzebna, a serwera nie trzeba restartować.
 W razie niepewności sprawdź jeden odczyt z lemmy.enabled=false.
+
+
+WERSJA 1.1.0 — ODZYSKIWANIE ODCZYTU I HEARTBEAT
+Po szybkich próbach aplikacja ponawia odczyt do 5 razy co 60 sekund.
+Sekcja recovery: attempts (0..10, 0 wyłącza), delay_seconds (1..600).
+Sekcja heartbeat: enabled=true włącza kontrolę; address to adres rejestru
+licznika stacji, liczony od zera. timeout_seconds=70, poll_interval_seconds=5.
+Licznik musi pochodzić ze stacji pomiarowej, a nie z cyklu ekranu HMI.
+checks to opcjonalna lista {"address": 101, "allowed_values": [1]} —
+adres jest przykładowy; dopasuj do dokumentacji własnego urządzenia.
+Zmiana licznika musi nastąpić podczas bieżącego odczytu. Zawinięcie licznika
+jest poprawne. Brak zmiany lub błędna diagnostyka wyklucza zielony status.
+Ostatnie poprawne wartości zostają zachowane z ich rzeczywistym czasem.
+Bez konfiguracji heartbeat kontrola jest wyłączona (zgodność ze starszą wersją).
+Odczyty odbywają się wg harmonogramu, a nie stale. Heartbeat potwierdza pracę
+źródła, nie sprawność każdego czujnika. Do tego służą dodatkowe checks.
+Szczegóły, przyczyny zmian i aktualizacja: RELEASE_v1.1.0.md.
