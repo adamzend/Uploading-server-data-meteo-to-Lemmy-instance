@@ -4,6 +4,10 @@ A Python application that reads a physical weather station over **Modbus TCP** a
 
 It collects temperature, relative humidity and atmospheric pressure, stores the history in SQLite, generates three monthly charts, and uploads the results through Lemmy's API. A standard Linux CRON job runs the complete cycle every hour.
 
+## Latest release
+
+[v1.1.1: Pillow security update](RELEASE_v1.1.1.md) upgrades Pillow to 13.0.0 and retains the recovery and heartbeat features of v1.1.0.
+
 ## Features
 
 - Configurable Modbus host, TCP port, device ID and register addresses.
